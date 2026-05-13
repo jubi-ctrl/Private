@@ -29,11 +29,27 @@
   .icon-badge { width: 30px; height: 30px; background: var(--green); border-radius: 7px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; }
   main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
 
-  .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 1.25rem; }
-  select, button { height: 34px; padding: 0 12px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer; outline: none; transition: border-color 0.15s; }
-  select:hover, button:hover { border-color: var(--green); }
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 0.75rem; }
+  select, input[type="date"], button {
+    height: 34px; padding: 0 12px; border-radius: var(--radius);
+    border: 0.5px solid var(--border2); background: var(--bg); color: var(--text);
+    font-size: 13px; cursor: pointer; outline: none; transition: border-color 0.15s;
+  }
+  input[type="date"] { cursor: text; padding: 0 8px; }
+  select:hover, input:hover, button:hover { border-color: var(--green); }
+  input:focus { border-color: var(--green); }
   button { display: flex; align-items: center; gap: 6px; }
   button:active { opacity: 0.7; }
+  .date-sep { font-size: 13px; color: var(--text3); }
+
+  .preset-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
+  .preset-label { font-size: 12px; color: var(--text3); }
+  .preset-btn {
+    font-size: 12px; padding: 3px 10px; border-radius: 999px;
+    border: 0.5px solid var(--border2); background: var(--bg); color: var(--text2);
+    cursor: pointer; transition: all 0.15s; height: auto; line-height: 1.6;
+  }
+  .preset-btn:hover { border-color: var(--green); color: var(--green); }
 
   .crop-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
   .crop-tab { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 0.5px solid var(--border2); background: var(--bg); color: var(--text2); cursor: pointer; transition: all 0.15s; }
@@ -50,7 +66,7 @@
   .error-box { background: #fff8ec; border: 0.5px solid #f0d080; border-radius: var(--radius); padding: 0.75rem 1rem; font-size: 13px; color: #7a5500; margin-bottom: 1rem; display: flex; gap: 8px; align-items: flex-start; line-height: 1.6; }
   @media (prefers-color-scheme: dark) { .error-box { background: #2a2010; border-color: #5a4010; color: #e0b060; } }
 
-  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
   .metric-card { background: var(--bg2); border-radius: var(--radius); padding: 0.75rem 1rem; }
   .metric-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
   .metric-value { font-size: 22px; font-weight: 500; }
@@ -66,7 +82,7 @@
 
   .table-wrap { border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--bg); }
   .table-header { padding: 0.75rem 1.25rem; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .section-title { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 0.75rem; }
+  .section-title { font-size: 13px; font-weight: 500; color: var(--text2); }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th { font-size: 11px; color: var(--text3); font-weight: 500; text-align: left; padding: 8px 12px; background: var(--bg2); white-space: nowrap; border-bottom: 0.5px solid var(--border); }
   td { padding: 8px 12px; border-bottom: 0.5px solid var(--border); }
@@ -97,14 +113,21 @@
       <option value="台南">台南</option>
       <option value="高雄">高雄</option>
     </select>
-    <select id="sel-days">
-      <option value="7">近 7 天</option>
-      <option value="14">近 14 天</option>
-      <option value="30">近 30 天</option>
-    </select>
+    <input type="date" id="date-start" />
+    <span class="date-sep">—</span>
+    <input type="date" id="date-end" />
     <button onclick="loadData()">
-      <i class="ti ti-refresh" aria-hidden="true"></i> 重新整理
+      <i class="ti ti-refresh" aria-hidden="true"></i> 查詢
     </button>
+  </div>
+
+  <div class="preset-row">
+    <span class="preset-label">快速選擇：</span>
+    <button class="preset-btn" onclick="setPreset(7)">近 7 天</button>
+    <button class="preset-btn" onclick="setPreset(30)">近 30 天</button>
+    <button class="preset-btn" onclick="setPreset(90)">近 3 個月</button>
+    <button class="preset-btn" onclick="setYear(2025)">2025 全年</button>
+    <button class="preset-btn" onclick="setYear(2024)">2024 全年</button>
   </div>
 
   <div class="crop-tabs" id="crop-tabs"></div>
@@ -119,14 +142,14 @@
 
   <div class="chart-wrap">
     <div class="chart-legend" id="chart-legend"></div>
-    <div style="position:relative; width:100%; height:260px;">
+    <div style="position:relative; width:100%; height:280px;">
       <canvas id="priceChart" role="img" aria-label="農產品均價走勢折線圖"></canvas>
     </div>
   </div>
 
   <div class="table-wrap">
     <div class="table-header">
-      <span class="section-title" style="margin:0">交易明細</span>
+      <span class="section-title">交易明細</span>
       <span class="badge" id="row-count">-</span>
     </div>
     <div style="overflow-x:auto;">
@@ -153,28 +176,43 @@
 
 <script>
 const CROPS = [
-  { label: '香蕉',   key: '香蕉' },
-  { label: '小番茄', key: '小番茄' },
-  { label: '番茄',   key: '番茄' },
-  { label: '紅龍果', key: '紅龍果' },
-  { label: '百香果', key: '百香果' },
-  { label: '芒果',   key: '芒果' },
-  { label: '鳳梨',   key: '鳳梨' },
-  { label: '西瓜',   key: '西瓜' },
+  { label: '番石榴紅心', key: '番石榴-紅心' },
+  { label: '芒果青',     key: '芒果-青芒果' },
+  { label: '愛文芒果',   key: '芒果-愛文' },
+  { label: '金鑽鳳梨',   key: '鳳梨-金鑽' },
+  { label: '紅肉火龍果', key: '紅龍果-紅肉' },
 ];
 
 let currentCrop = CROPS[0];
 let allData = [];
 let chartInstance = null;
 
-function rocDate(d) {
-  return `${d.getFullYear()-1911}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+function toRoc(iso) {
+  const [y, m, d] = iso.split('-');
+  return `${parseInt(y)-1911}.${m}.${d}`;
+}
+function fmtIso(d) { return d.toISOString().slice(0,10); }
+
+function initDates() {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - 29);
+  document.getElementById('date-end').value = fmtIso(end);
+  document.getElementById('date-start').value = fmtIso(start);
 }
 
-function dateRange(days) {
+function setPreset(days) {
   const end = new Date(), start = new Date();
   start.setDate(end.getDate() - days + 1);
-  return { start: rocDate(start), end: rocDate(end) };
+  document.getElementById('date-end').value = fmtIso(end);
+  document.getElementById('date-start').value = fmtIso(start);
+  loadData();
+}
+
+function setYear(year) {
+  document.getElementById('date-start').value = `${year}-01-01`;
+  document.getElementById('date-end').value = `${year}-12-31`;
+  loadData();
 }
 
 function setStatus(state, msg) {
@@ -194,38 +232,54 @@ function switchCrop(key) {
   renderAll();
 }
 
+async function fetchAllPages(startRoc, endRoc, market) {
+  const PAGE = 3000;
+  let skip = 0, all = [];
+  while (true) {
+    const params = new URLSearchParams({ StartDate: startRoc, EndDate: endRoc, '$top': PAGE, '$skip': skip });
+    if (market) params.append('Market', market);
+    const res = await fetch(`/api/farm?${params}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const page = await res.json();
+    if (!Array.isArray(page) || page.length === 0) break;
+    all = all.concat(page);
+    if (page.length < PAGE) break;
+    skip += PAGE;
+    setStatus('loading', `載入中... ${all.length} 筆`);
+  }
+  return all;
+}
+
 async function loadData() {
   setStatus('loading', '載入中...');
   document.getElementById('error-area').innerHTML = '';
 
-  const days = parseInt(document.getElementById('sel-days').value);
-  const market = document.getElementById('sel-market').value;
-  const { start, end } = dateRange(days);
+  const startIso = document.getElementById('date-start').value;
+  const endIso   = document.getElementById('date-end').value;
+  if (!startIso || !endIso) { setStatus('err', '請選擇日期範圍'); return; }
 
-  const params = new URLSearchParams({ StartDate: start, EndDate: end, '$top': 3000, '$skip': 0 });
-  if (market) params.append('Market', market);
+  const startRoc = toRoc(startIso);
+  const endRoc   = toRoc(endIso);
+  const market   = document.getElementById('sel-market').value;
 
   try {
-    const res = await fetch(`/api/farm?${params}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    allData = Array.isArray(json) ? json : [];
+    allData = await fetchAllPages(startRoc, endRoc, market);
     if (!allData.length) { setStatus('err', '查無資料，請調整條件'); return; }
-    setStatus('ok', `${allData.length} 筆｜${new Date().toLocaleTimeString('zh-TW')}`);
+    setStatus('ok', `${allData.length} 筆｜${startRoc} ~ ${endRoc}｜${new Date().toLocaleTimeString('zh-TW')}`);
     renderAll();
   } catch(e) {
     setStatus('err', '資料載入失敗：' + e.message);
     document.getElementById('error-area').innerHTML = `
       <div class="error-box">
         <i class="ti ti-alert-triangle" aria-hidden="true" style="font-size:16px;flex-shrink:0;margin-top:1px"></i>
-        <span>資料載入失敗（${e.message}）。請確認 Vercel 已正確部署，或稍後再試。</span>
+        <span>資料載入失敗（${e.message}）。請稍後再試。</span>
       </div>`;
   }
 }
 
 function filterData() {
   const mkt = document.getElementById('sel-market').value;
-  let d = allData.filter(r => r['作物名稱'] && r['作物名稱'].includes(currentCrop.key));
+  let d = allData.filter(r => r['作物名稱'] === currentCrop.key);
   if (mkt) d = d.filter(r => r['市場名稱'] === mkt);
   return d;
 }
@@ -241,7 +295,10 @@ function renderAll() {
 
 function renderMetrics(data) {
   const el = document.getElementById('metrics');
-  if (!data.length) { el.innerHTML = ''; return; }
+  if (!data.length) {
+    el.innerHTML = `<div style="color:var(--text3);font-size:13px;padding:0.5rem 0">此品項在所選期間查無資料</div>`;
+    return;
+  }
   const prices = data.map(r=>parseFloat(r['平均價'])||0).filter(v=>v>0);
   const vols   = data.map(r=>parseFloat(r['交易量'])||0);
   const mean = avg(prices), hi = Math.max(...prices), lo = Math.min(...prices);
@@ -270,20 +327,28 @@ function renderChart(data) {
   });
   const labels = Object.keys(byDate).sort();
   const vals = labels.map(d => +avg(byDate[d]).toFixed(1));
+  const isLong = labels.length > 60;
 
   document.getElementById('chart-legend').innerHTML = `
-    <div class="legend-item"><span class="legend-swatch" style="background:#1D9E75"></span><span>${currentCrop.label} 日均價（元/kg）</span></div>`;
+    <div class="legend-item"><span class="legend-swatch" style="background:#1D9E75"></span>
+    <span>${currentCrop.label}（${currentCrop.key}）均價（元/kg）</span></div>`;
 
   const ctx = document.getElementById('priceChart').getContext('2d');
   if (chartInstance) chartInstance.destroy();
   chartInstance = new Chart(ctx, {
     type: 'line',
-    data: { labels, datasets: [{ label: currentCrop.label, data: vals, borderColor:'#1D9E75', backgroundColor:'rgba(29,158,117,0.07)', borderWidth:2, pointRadius:3, pointHoverRadius:5, pointBackgroundColor:'#1D9E75', tension:0.35, fill:true }] },
+    data: { labels, datasets: [{ label: currentCrop.label, data: vals,
+      borderColor:'#1D9E75', backgroundColor:'rgba(29,158,117,0.07)',
+      borderWidth: isLong ? 1.5 : 2,
+      pointRadius: isLong ? 0 : 3,
+      pointHoverRadius: 4, pointBackgroundColor:'#1D9E75',
+      tension: 0.3, fill: true
+    }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend:{display:false}, tooltip:{callbacks:{label: c=>` ${c.parsed.y.toFixed(1)} 元/kg`}} },
       scales: {
-        x: { ticks:{font:{size:11},color:'#888',autoSkip:true,maxTicksLimit:12}, grid:{display:false} },
+        x: { ticks:{font:{size:11},color:'#888',autoSkip:true,maxTicksLimit:14}, grid:{display:false} },
         y: { ticks:{font:{size:11},color:'#888',callback:v=>v+' 元'}, grid:{color:'rgba(128,128,128,0.1)'} }
       }
     }
@@ -295,7 +360,7 @@ function renderTable(data) {
   document.getElementById('row-count').textContent = sorted.length + ' 筆';
   const tbody = document.getElementById('table-body');
   if (!sorted.length) { tbody.innerHTML='<tr><td colspan="8" class="empty-state">查無資料</td></tr>'; return; }
-  tbody.innerHTML = sorted.slice(0,200).map(r=>`
+  tbody.innerHTML = sorted.slice(0,300).map(r=>`
     <tr>
       <td>${r['交易日期']||'-'}</td><td>${r['作物名稱']||'-'}</td><td>${r['市場名稱']||'-'}</td>
       <td class="num">${parseFloat(r['上價']||0).toFixed(1)}</td>
@@ -306,10 +371,10 @@ function renderTable(data) {
     </tr>`).join('');
 }
 
+initDates();
 buildTabs();
 loadData();
 document.getElementById('sel-market').addEventListener('change', renderAll);
-document.getElementById('sel-days').addEventListener('change', ()=>loadData());
 </script>
 </body>
 </html>
